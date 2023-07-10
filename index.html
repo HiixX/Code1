@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Choix de catégorie</title>
+  </head>
+
+  <body>
+    <h1>Choisissez une catégorie :</h1>
+    <form id="categoryForm" method="post" action="quizz.html">
+      <label for="categorySelect">Catégorie :</label>
+      <select name="category" id="categorySelect">
+        <option value="film">Film</option>
+        <option value="geographie">Géographie</option>
+      </select>
+      <br />
+      <label for="difficultySelect">Difficulté :</label>
+      <select name="difficulty" id="difficultySelect">
+        <option value="easy">Facile</option>
+        <option value="medium">Moyen</option>
+        <option value="hard">Difficile</option>
+      </select>
+      <br />
+      <input type="submit" value="Commencer le quizz" />
+    </form>
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      charset="UTF-8"
+    ></script>
+    <script>
+      $(document).ready(function () {
+        $("#categoryForm").submit(function (event) {
+          event.preventDefault();
+          const selectedCategory = $("#categorySelect").val();
+          const selectedDifficulty = $("#difficultySelect").val();
+          let apiUrl;
+
+          if (selectedCategory === "film") {
+            apiUrl =
+              "https://opentdb.com/api.php?amount=20&category=11&difficulty=" +
+              selectedDifficulty +
+              "&type=multiple";
+          } else if (selectedCategory === "geographie") {
+            apiUrl =
+              "https://opentdb.com/api.php?amount=20&category=21&difficulty=" +
+              selectedDifficulty +
+              "&type=multiple";
+          }
+
+          // Rediriger vers la page du quizz avec l'URL correspondant à la catégorie et à la difficulté sélectionnées
+          window.location.href = "quizz.html?apiUrl=" + apiUrl;
+        });
+      });
+    </script>
+  </body>
+</html>
