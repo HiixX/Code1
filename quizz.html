@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PangO</title>
+    <style>
+      /* Styles CSS du quiz */
+    </style>
+  </head>
+  <body>
+    <div id="conteneurQuizz"></div>
+    <div id="afficheScore">Score : <span id="currentScore">0</span></div>
+    <div id="afficheMessage"></div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      charset="UTF-8"
+    ></script>
+    <script>
+      $(document).ready(function () {
+        // Récupérer l'URL de l'API à partir des paramètres de requête
+        const apiUrl = new URLSearchParams(window.location.search).get(
+          "apiUrl"
+        );
+
+        let indexQuestion = 0;
+        let score = 0;
+        let questions = [];
+
+        function loadQuiz() {
+          $.getJSON(apiUrl)
+            .done(function (data) {
+              questions = data.results;
+              showQuestion();
+            })
+            .fail(function () {
+              $("#conteneurQuizz").text(
+                "Une erreur s'est produite lors du chargement du quiz."
+              );
+            });
+        }
+
+        function showQuestion() {
+          if (indexQuestion >= questions.length) {
+            showResult();
+            return;
+          }
+
+          const currentQuestion = questions[indexQuestion];
+
+          const quizContainer = $("#conteneurQuizz");
+          quizContainer.empty();
+
+          // création, affichage question
+          const questionDiv = $("<div>").addClass("question").html(
+            // gestion des problèmes d'encodage
+            decodeHTML(currentQuestion.question)
+          );
+          quizContainer.append(questionDiv);
+
+          const optionsDiv = $("<div>").addClass("options");
+          quizContainer.append(optionsDiv);
+
+          const allOptions = shuffleOptions([
+            ...currentQuestion.incorrect_answers,
+            currentQuestion.correct_answer,
+          ]);
+
+          // Affichage des choix passés en options.
+          allOptions.forEach(function (option) {
+            const optionId = "option_" + btoa(option);
+            const label = $("<label>")
+              .attr("for", optionId)
+              .text(decodeHTML(option));
+
+            const radioInput = $("<input>").attr({
+              type: "radio",
+              name: "options",
+              id: optionId,
+              value: option,
+            });
+
+            optionsDiv.append(radioInput, label);
+          });
+
+          const submitButton = $("<button>")
+            .addClass("submitButton")
+            .text("Suivant");
+          quizContainer.append(submitButton);
+
+          submitButton.click(function () {
+            const selectedOption = $("input[name=options]:checked").val();
+            const correctAnswer = currentQuestion.correct_answer;
+
+            if (selectedOption === correctAnswer) {
+              score++;
+              $("#currentScore").text(score);
+              // Bravo
+              showFeedback("Bravo !");
+            } else {
+              showFeedback("Non !");
+            }
+
+            showAnswer(correctAnswer);
+          });
+        }
+
+        function showAnswer(correctAnswer) {
+          const quizContainer = $("#conteneurQuizz");
+          quizContainer.empty();
+
+          // Affichage des propositions
+          const answerDiv = $("<div>")
+            .addClass("answer")
+            .text(`La réponse correcte était : ${decodeHTML(correctAnswer)}`);
+          quizContainer.append(answerDiv);
+
+          indexQuestion++;
+          setTimeout(showQuestion, 1);
+        }
+
+        function showResult() {
+          const quizContainer = $("#conteneurQuizz");
+          quizContainer.empty();
+
+          // Affichage résultat
+          const resultDiv = $("<div>")
+            .addClass("result")
+            .text(`Votre score : ${score}/${questions.length}`);
+          innerHTML;
+          quizContainer.append(resultDiv);
+          resultDiv.load("chemin/vers/page.html");
+        }
+
+        // Message de résultat Bravo / Non !
+        function showFeedback(message) {
+          const afficheMessage = $("#afficheMessage");
+          afficheMessage.text(message);
+        }
+
+        // Pour le score
+        function shuffleOptions(options) {
+          for (let i = options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [options[i], options[j]] = [options[j], options[i]];
+          }
+          return options;
+        }
+
+        // Fonction pour décoder les entités HTML
+        function decodeHTML(html) {
+          const txt = document.createElement("textarea");
+          txt.innerHTML = html;
+          return txt.value;
+        }
+
+        loadQuiz();
+      });
+    </script>
+  </body>
+</html>
